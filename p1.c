@@ -69,7 +69,7 @@ int main()
         switch (c)
         {
         case 't':
-            adiciona_tarefa()
+            adiciona_tarefa();
             break;
         case 'l':
             break;

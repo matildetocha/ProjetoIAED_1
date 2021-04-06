@@ -15,12 +15,15 @@
 #define SZ_DES_T 51
 /* Número máximo de utilizadores que o sistema suporta */
 #define SZ_USERS 51
+/* Número máximo de tarefas que o sistema suporta */
+#define SZ_TASKS 10000
 /* qual é o número máximo de instruções que o sitema aceita?? */
 #define MAX 100
 
 typedef struct
 {
     char des_user[SZ_DES_UA];
+    int user_number;
 } User;
 
 User system_users[SZ_USERS];
@@ -43,39 +46,59 @@ typedef struct
     int starting_time;
 } Task;
 
-Task tasks[10000];
+Task tasks[SZ_TASKS];
 
-void adiciona_tarefa() {
-    Task t;
-    t.identifier = 0;
-    t.task_user = NULL;
-    tasks[0] = t;
+void AddUser(User v)
+{
+    int i = 0;
+
+    for (i = 0; i < SZ_USERS; i++)
+    {
+        if (strcmp(v.des_user, system_users[i].des_user) == 0)
+            printf("user already exists\n");
+    }
+    printf("%ld\n", strlen(system_users->des_user));
+    if (strlen(system_users->des_user) == SZ_USERS)
+        printf("too many users\n");
+    else
+        strcpy(system_users[v.user_number].des_user, v.des_user);
 }
 
 int main()
 {
-    strcpy(activities[0].des_act, "TO DO");
-    strcpy(activities[0].des_act, "TO DO");
-    strcpy(activities[0].des_act, "TO DO");
-
     char str[MAX];
     int c;
+    int i = 0;
+    User u;
+
+    strcpy(activities[0].des_act, "TO DO");
+    strcpy(activities[1].des_act, "IN PROGRESS");
+    strcpy(activities[2].des_act, "DONE");
+    strcpy(system_users[0].des_user, "PedroMariaSilva");
+    strcpy(system_users[1].des_user, "abc");
 
     while ((c = getchar()) != 'q')
     {
-        getchar();
+        getchar(); /* Retira o carácter em branco entre o comando e as devidas instruções */
         fgets(str, MAX, stdin);
 
         switch (c)
         {
         case 't':
-            adiciona_tarefa();
             break;
         case 'l':
             break;
         case 'n':
             break;
         case 'u':
+            if (1)
+            {
+                strcpy(u.des_user, strtok(str, " \n"));
+                u.user_number++;
+                AddUser(u);
+            }
+            for (i = 0; i < SZ_USERS; i++)
+                printf("%s\n", system_users[i].des_user);
             break;
         case 'm':
             break;

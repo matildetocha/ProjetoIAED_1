@@ -1,34 +1,25 @@
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
-int main () {
-   char str[80] = " pedrosilva";
-   char *v[80];
-   const char s[5] = " \n";
-   v[0] = strtok(str, " \n");
-   
-   printf("%s\n", v[0]);
-
-   return 0;
-}
-
-void adiciona_tarefa()
+int main()
 {
-    Task t;
-    t.identifier = 0;
-    t.task_user.des_user = NULL;
-    tasks[0] = t;
-}
+    char str[80] = "";
+    const char s[10] = "\0";
+    char *token;
 
-int BlankDesc(char str[])
-{
-    long unsigned int i = 0, blank_spaces = 0;
-    for (i = 0; i < strlen(str); i++)
+    fgets(str, 80, stdin);
+    /* get the first token */
+    token = strtok(str, s);
+    if (token == NULL)
+        printf("abc\n");
+
+    /* walk through other tokens */
+    while (token != NULL)
     {
-        if (strcmp(str, " ") == 0)
-            blank_spaces++;
+        printf("ola\n");
+        token = strtok(NULL, s);
     }
-    if (blank_spaces == strlen(str))
-        return 0;
-    return 1;
+
+    return 0;
 }

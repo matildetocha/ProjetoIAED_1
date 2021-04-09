@@ -19,7 +19,9 @@
 #define SZ_TASKS 10000
 /* Número máximo de atividades que o sistema suporta. */
 #define SZ_ACT 10
-/* qual é o número máximo de instruções que o sitema aceita?? */
+/* Número máximo de instruções que o sitema suporta*/
+#define MX 6002
+
 #define MAX 100
 
 /* Structs */
@@ -39,7 +41,7 @@ Activity activities[SZ_ACT];
 typedef struct
 {
     int identifier;
-    char des_task[SZ_DES_T]; 
+    char des_task[SZ_DES_T];
     int time;
     User task_user;
     Activity task_act;
@@ -51,6 +53,8 @@ Task tasks[SZ_TASKS];
 int user_number = 0;
 /* The number of tasks stored. */
 int task_number = 0;
+/* Time */
+int time = 0;
 
 /* Adds a new given task to the global vector of tasks. */
 void AddTask(Task t)
@@ -86,10 +90,13 @@ void AddTask(Task t)
         tasks[task_number].identifier = t.identifier;
         tasks[task_number].time = t.time;
         tasks[task_number].starting_time = t.starting_time;
+
+        printf("task %d\n", task_number + 1);
     }
 }
 
-void ListsTaks(char *v[MAX])
+/* Lists the tasks in the global vector tasks in order of input, given by given the string. */
+void ListsTaks_Order(char *v[MAX])
 {
     int i = 1, val;
     while (v[i] != NULL)
@@ -101,139 +108,142 @@ void ListsTaks(char *v[MAX])
             return;
         }
         val--;
-        printf("%s #%d %s", tasks[val].task_act.des_act, tasks[val].time, tasks[val].des_task);
+        printf("%d %s #%d %s", tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].time, tasks[val].des_task);
         i++;
     }
-
 }
 
-    /* Adds a new given user to the global vector of system_users. */
-    void AddUser(User v)
-    {
-        int i = 0;
+/* Adds a new given user to the global vector of system_users. */
+void AddUser(User v)
+{
+    int i = 0;
 
-        for (i = 0; i < SZ_USERS; i++)
+    for (i = 0; i < SZ_USERS; i++)
+    {
+        if (strcmp(v.des_user, system_users[i].des_user) == 0)
         {
-            if (strcmp(v.des_user, system_users[i].des_user) == 0)
-            {
-                printf("user already exists\n");
-                user_number--;
-                return;
-            }
-        }
-        if (user_number == SZ_USERS)
-        {
-            printf("too many users\n");
+            printf("user already exists\n");
             user_number--;
             return;
         }
-        else strcpy(system_users[user_number].des_user, v.des_user);
     }
-
-    void BreakTask(char str[MAX], const char delim[], char *v[MAX])
+    if (user_number == SZ_USERS)
     {
-        char *token;
-        int i = 0;
+        printf("too many users\n");
+        user_number--;
+        return;
+    }
+    else
+        strcpy(system_users[user_number].des_user, v.des_user);
+}
 
-        token = strtok(str, delim);
+void BreakTask(char str[MAX], const char delim[], char *v[MAX])
+{
+    char *token;
+    int i = 0;
+
+    token = strtok(str, delim);
+    v[i++] = token;
+
+    token = strtok(NULL, delim);
+    v[i++] = token;
+
+    token = strtok(NULL, "");
+    v[i++] = token;
+    v[i] = NULL;
+}
+
+/* Breaks the given string into tokens, considering that it may or may not receive instructions. Used for these commands: 'l', 'u', 'a'. */
+void BreakStr_Opt(char str[MAX], const char delim[], char *v[MAX])
+{
+    char *token;
+    int i = 0;
+
+    /* Gets the first token. */
+    token = strtok(str, " \n");
+
+    /* Walks through other tokens. */
+    while (token != NULL)
+    {
         v[i++] = token;
-
         token = strtok(NULL, delim);
-        v[i++] = token;
-     
-        token = strtok(NULL, "");
-        v[i++] = token;
-        v[i] = NULL;
     }
+    v[i] = NULL;
+}
 
-    void BreakStr(char str[MAX], const char delim[], char *v[MAX])
+int main()
+{
+    char str[MAX], *v[MAX];
+    int i = 0;
+    User u;
+    Task t;
+
+    strcpy(activities[0].des_act, "TO DO");
+    strcpy(activities[1].des_act, "IN PROGRESS");
+    strcpy(activities[2].des_act, "DONE");
+
+    for (;;)
     {
-        char *token;
-        int i = 0;
+        fgets(str, MAX, stdin);
 
-        /* Gets the first token. */
-        token = strtok(str, " \n");
-
-        /* Walks through other tokens. */
-        while (token != NULL)
+        i = 0;
+        switch (str[0])
         {
-            v[i++] = token;
-            token = strtok(NULL, delim);
-        }
-        v[i] = NULL;
-    }
+            case 't':
+                BreakTask(str, " ", v);
 
-    int main()
-    {
-        char str[MAX], *v[MAX];
-        int i = 0;
-        User u;
-        Task t;
+                i++;
 
-        strcpy(activities[0].des_act, "TO DO");
-        strcpy(activities[1].des_act, "IN PROGRESS");
-        strcpy(activities[2].des_act, "DONE");
+                t.time = atoi(v[i++]);
+                strcpy(t.des_task, v[i]);
+                strcpy(t.task_act.des_act, "TO DO");
+                t.identifier = task_number + 1;
+                t.starting_time = 0;
 
-        for (;;)
-        {
-            fgets(str, MAX, stdin);
-            switch (str[0])
-            {
-                case 't':
-                    BreakTask(str, " ", v);
+                AddTask(t);
+                task_number++;
 
-                    i++;
+                break;
+            case 'l':
+                BreakStr_Opt(str, " ", v);
 
-                    t.time = atoi(v[i++]);
-                    strcpy(t.des_task, v[i]);
-                    strcpy(t.task_act.des_act, "TO DO");
-                    t.identifier = task_number + 1;
-                    t.starting_time = 0;
+                if (v[1] == NULL)
+                {
+                    for (i = 0; i < task_number; i++)
+                        printf("%d %s #%d %s", tasks[i].identifier, tasks[i].task_act.des_act, tasks[i].time, tasks[i].des_task);
+                }
+                else
+                    ListsTaks_Order(v);
 
-                    AddTask(t);
-                    task_number++;
-                    printf("task %d", task_number);
-                    i = 0;
-                    break;
-                case 'l':
-                    BreakStr(str, " ", v);
+                break;
+            case 'n':
+                BreakStr_Opt(str, "\n", v);
 
-                    if (v[1] == NULL)
-                    {
-                        for (i = 0; i < task_number; i++)
-                            printf("%s #%d %s", tasks[i].task_act.des_act, tasks[i].time, tasks[i].des_task);
-                    }
-                    else ListsTaks(v);
-                    
-                    i = 0;
-                    break;
-                case 'n':
-                    break;
-                case 'u':
-                    BreakStr(str, "\n", v);
+                break;
+            case 'u':
+                BreakStr_Opt(str, "\n", v);
 
-                    if (v[1] == NULL)
-                    {
-                        for (i = 0; i < user_number; i++)
-                            printf("%s\n", system_users[i].des_user);
-                    }
-                    else
-                    {
-                        strcpy(u.des_user, v[1]);
-                        AddUser(u);
-                        user_number++;
-                    }
+                if (v[1] == NULL)
+                {
+                    for (i = 0; i < user_number; i++)
+                        printf("%s\n", system_users[i].des_user);
+                }
+                else
+                {
+                    strcpy(u.des_user, v[1]);
+                    AddUser(u);
+                    user_number++;
+                }
 
-                    i = 0;
-                    break;
-                case 'm':
-                    break;
-                case 'd':
-                    break;
-                case 'a':
-                    break;
-                case 'q':
-                    exit(EXIT_SUCCESS);
-            }
+                break;
+            case 'm':
+                break;
+            case 'd':
+                break;
+            case 'a':
+                break;
+            case 'q':
+                exit(EXIT_SUCCESS);
         }
     }
+}

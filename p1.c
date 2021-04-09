@@ -55,107 +55,185 @@ int task_number = 0;
 /* Adds a new given task to the global vector of tasks. */
 void AddTask(Task t)
 {
-    int i = 0, cmp = 1;
+    int i = 0;
 
     for (i = 0; i < SZ_TASKS; i++)
     {
         if (strcmp(t.des_task, tasks[i].des_task) == 0)
         {
             printf("duplicate description\n");
+            task_number--;
             return;
         }
     }
-    if (strlen(tasks->des_task) == SZ_TASKS)
+    if (task_number == SZ_TASKS)
     {
         printf("too many tasks\n");
+        task_number--;
         return;
     }
-    else strcpy(tasks[1].des_task, t.des_task);
+    else if (!isdigit(t.time) && t.time < 0)
+    {
+        printf("invalid duration\n");
+        task_number--;
+        return;
+    }
+
+    else
+    {
+        strcpy(tasks[task_number].des_task, t.des_task);
+        strcpy(tasks[task_number].task_act.des_act, t.task_act.des_act);
+        tasks[task_number].identifier = t.identifier;
+        tasks[task_number].time = t.time;
+        tasks[task_number].starting_time = t.starting_time;
+    }
 }
 
-/* Adds a new given user to the global vector of system_users. */
-void AddUser(User v)
+void ListsTaks(char *v[MAX])
 {
-    int i = 0;
-
-    for (i = 0; i < SZ_USERS; i++)
+    int i = 1, val;
+    while (v[i] != NULL)
     {
-        if (strcmp(v.des_user, system_users[i].des_user) == 0)
+        val = atoi(v[i]);
+        if (val > task_number)
         {
-            printf("user already exists\n");
+            printf("%d: no such task\n", val);
+            return;
+        }
+        val--;
+        printf("%s #%d %s", tasks[val].task_act.des_act, tasks[val].time, tasks[val].des_task);
+        i++;
+    }
+
+}
+
+    /* Adds a new given user to the global vector of system_users. */
+    void AddUser(User v)
+    {
+        int i = 0;
+
+        for (i = 0; i < SZ_USERS; i++)
+        {
+            if (strcmp(v.des_user, system_users[i].des_user) == 0)
+            {
+                printf("user already exists\n");
+                user_number--;
+                return;
+            }
+        }
+        if (user_number == SZ_USERS)
+        {
+            printf("too many users\n");
             user_number--;
             return;
         }
+        else strcpy(system_users[user_number].des_user, v.des_user);
     }
-    if (strlen(system_users->des_user) == SZ_USERS)
+
+    void BreakTask(char str[MAX], const char delim[], char *v[MAX])
     {
-        printf("too many users\n");
-        user_number--;
-        return;
-    }
-    else strcpy(system_users[user_number].des_user, v.des_user);
-}
+        char *token;
+        int i = 0;
 
-void BreakStr(char str[], const char delim[], char *v[])
-{
-    char *token;
-    int i = 0;
-
-    /* Gets the first token. */
-    token = strtok(str, " \n");
-
-    /* Walks through other tokens. */
-    while (token != NULL)
-    {
+        token = strtok(str, delim);
         v[i++] = token;
+
         token = strtok(NULL, delim);
+        v[i++] = token;
+     
+        token = strtok(NULL, "");
+        v[i++] = token;
+        v[i] = NULL;
     }
-    v[i] = NULL;
-}
 
-int main()
-{
-    char str[MAX], *v[MAX];
-    int i = 0;
-    User u;
-
-    strcpy(activities[0].des_act, "TO DO");
-    strcpy(activities[1].des_act, "IN PROGRESS");
-    strcpy(activities[2].des_act, "DONE");
-
-    for (;;)
+    void BreakStr(char str[MAX], const char delim[], char *v[MAX])
     {
-        fgets(str, MAX, stdin);
-        switch (str[0])
+        char *token;
+        int i = 0;
+
+        /* Gets the first token. */
+        token = strtok(str, " \n");
+
+        /* Walks through other tokens. */
+        while (token != NULL)
         {
-            case 't':
-                break;
-            case 'l':
-                break;
-            case 'n':
-                break;
-            case 'u':
-                BreakStr(str, "\n", v);
-                if (v[1] == NULL)
-                {
-                    for (i = 0; i < user_number; i++)
-                        printf("%s\n", system_users[i].des_user);
-                }
-                else
-                {
-                     strcpy(u.des_user, v[1]);
-                    AddUser(u);
-                    user_number++;                   
-                }
-                break;
-            case 'm':
-                break;
-            case 'd':
-                break;
-            case 'a':
-                break;
-            case 'q':
-                exit(EXIT_SUCCESS);
+            v[i++] = token;
+            token = strtok(NULL, delim);
+        }
+        v[i] = NULL;
+    }
+
+    int main()
+    {
+        char str[MAX], *v[MAX];
+        int i = 0;
+        User u;
+        Task t;
+
+        strcpy(activities[0].des_act, "TO DO");
+        strcpy(activities[1].des_act, "IN PROGRESS");
+        strcpy(activities[2].des_act, "DONE");
+
+        for (;;)
+        {
+            fgets(str, MAX, stdin);
+            switch (str[0])
+            {
+                case 't':
+                    BreakTask(str, " ", v);
+
+                    i++;
+
+                    t.time = atoi(v[i++]);
+                    strcpy(t.des_task, v[i]);
+                    strcpy(t.task_act.des_act, "TO DO");
+                    t.identifier = task_number + 1;
+                    t.starting_time = 0;
+
+                    AddTask(t);
+                    task_number++;
+                    printf("task %d", task_number);
+                    i = 0;
+                    break;
+                case 'l':
+                    BreakStr(str, " ", v);
+
+                    if (v[1] == NULL)
+                    {
+                        for (i = 0; i < task_number; i++)
+                            printf("%s #%d %s", tasks[i].task_act.des_act, tasks[i].time, tasks[i].des_task);
+                    }
+                    else ListsTaks(v);
+                    
+                    i = 0;
+                    break;
+                case 'n':
+                    break;
+                case 'u':
+                    BreakStr(str, "\n", v);
+
+                    if (v[1] == NULL)
+                    {
+                        for (i = 0; i < user_number; i++)
+                            printf("%s\n", system_users[i].des_user);
+                    }
+                    else
+                    {
+                        strcpy(u.des_user, v[1]);
+                        AddUser(u);
+                        user_number++;
+                    }
+
+                    i = 0;
+                    break;
+                case 'm':
+                    break;
+                case 'd':
+                    break;
+                case 'a':
+                    break;
+                case 'q':
+                    exit(EXIT_SUCCESS);
+            }
         }
     }
-}

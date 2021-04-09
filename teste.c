@@ -1,18 +1,17 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 int main()
 {
-    char str[80] = "";
-    const char s[10] = "\0";
+    char str[80] = "t 12 abc defg hij";
+    const char s[10] = "";
     char *token;
+    int val;
 
-    fgets(str, 80, stdin);
     /* get the first token */
-    token = strtok(str, s);
-    if (token == NULL)
-        printf("abc\n");
+    token = strtok(str, " ");
 
     /* walk through other tokens */
     while (token != NULL)

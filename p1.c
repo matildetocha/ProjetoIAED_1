@@ -39,7 +39,7 @@ Activity activities[SZ_ACT];
 typedef struct
 {
     int identifier;
-    char des_task[SZ_DES_T];
+    char des_task[SZ_DES_T]; 
     int time;
     User task_user;
     Activity task_act;

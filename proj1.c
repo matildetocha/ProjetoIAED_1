@@ -40,7 +40,7 @@ typedef struct
 {
     int identifier;
     char des_task[SZ_DES_T];
-    int time;
+    int duration;
     User task_user;
     Activity task_act;
     int starting_time;
@@ -51,6 +51,8 @@ Task tasks[SZ_TASKS];
 int user_number = 0;
 /* The number of tasks stored. */
 int task_number = 0;
+/* The number of activities stored. */
+int act_number = 3;
 /* System time. */
 int time = 0;
 
@@ -59,7 +61,13 @@ void AddTask(Task t)
 {
     int i = 0;
 
-    for (i = 0; i < SZ_TASKS; i++)
+    if (task_number == SZ_TASKS)
+    {
+        printf("too many tasks\n");
+        task_number--;
+        return;
+    }
+    for (i = 0; i < task_number + 1; i++)
     {
         if (strcmp(t.des_task, tasks[i].des_task) == 0)
         {
@@ -68,13 +76,8 @@ void AddTask(Task t)
             return;
         }
     }
-    if (task_number == SZ_TASKS)
-    {
-        printf("too many tasks\n");
-        task_number--;
-        return;
-    }
-    else if (!isdigit(t.time) && t.time < 0)
+
+    if (!isdigit(t.duration) && t.duration < 0)
     {
         printf("invalid duration\n");
         task_number--;
@@ -87,7 +90,7 @@ void AddTask(Task t)
         strcpy(tasks[task_number].des_task, t.des_task);
         strcpy(tasks[task_number].task_act.des_act, t.task_act.des_act);
         tasks[task_number].identifier = t.identifier;
-        tasks[task_number].time = t.time;
+        tasks[task_number].duration = t.duration;
         tasks[task_number].starting_time = t.starting_time;
 
         printf("task %d\n", task_number + 1);
@@ -107,7 +110,7 @@ void ListsTaks_Order(char *v[MAX])
             return;
         }
         val--;
-        printf("%d %s #%d %s", tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].time, tasks[val].des_task);
+        printf("%d %s #%d %s", tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].duration, tasks[val].des_task);
         i++;
     }
 }
@@ -120,12 +123,12 @@ void AdvanceTime(int n)
     else time += n;
 }
 
-/* Adds a new given user to the global vector of system_users. */
+/* Adds a new given user to the global vector of system users. */
 void AddUser(User v)
 {
     int i = 0;
 
-    for (i = 0; i < SZ_USERS; i++)
+    for (i = 0; i < user_number + 1; i++)
     {
         if (strcmp(v.des_user, system_users[i].des_user) == 0)
         {
@@ -142,6 +145,36 @@ void AddUser(User v)
     }
     else
         strcpy(system_users[user_number].des_user, v.des_user);
+}
+
+/* Adds a new given activity to the global vector of activities. */
+void AddActivity(Activity a)
+{
+    int i = 0;
+
+    for (i = 0; i < act_number + 1; i++)
+    {
+        if (strcmp(a.des_act, activities[i].des_act) == 0)
+        {
+            printf("duplicate activity\n");
+            act_number--;
+            return;
+        }
+        else if (islower(a.des_act[i]))
+        {    
+            printf("invalid description\n");
+            act_number--;
+            return;
+        }
+    }
+    if (act_number == SZ_ACT)
+    {
+        printf("too many activities\n");
+        act_number--;
+        return;
+    }
+    else
+        strcpy(activities[act_number].des_act, a.des_act);
 }
 
 /* Breaks the given string into tokens, considering that it's required that it receives instructions. Used for these commands: 't', 'n', 'm', 'd'. */
@@ -176,10 +209,8 @@ void BreakStr_Opt(char str[MAX], const char delim[], char *v[MAX])
     char *token;
     int i = 0;
 
-    /* Gets the first token. */
     token = strtok(str, " \n");
 
-    /* Walks through other tokens. */
     while (token != NULL)
     {
         v[i++] = token;
@@ -194,6 +225,8 @@ int main()
     int i = 0, n;
     User u;
     Task t;
+    Activity a;
+
     /* Creates 3 activites. */
     strcpy(activities[0].des_act, "TO DO");
     strcpy(activities[1].des_act, "IN PROGRESS");
@@ -212,7 +245,7 @@ int main()
 
                 i++;
                 /* Fills task t with the given information from the input and with the starting information as well. */
-                t.time = atoi(v[i++]);
+                t.duration = atoi(v[i++]);
                 strcpy(t.des_task, v[i]);
                 strcpy(t.task_act.des_act, "TO DO");
                 t.identifier = task_number + 1;
@@ -228,14 +261,14 @@ int main()
                 if (v[1] == NULL)
                 {
                     for (i = 0; i < task_number; i++)
-                        printf("%d %s #%d %s", tasks[i].identifier, tasks[i].task_act.des_act, tasks[i].time, tasks[i].des_task);
+                        printf("%d %s #%d %s", tasks[i].identifier, tasks[i].task_act.des_act, tasks[i].duration, tasks[i].des_task);
                 }
                 else
                     ListsTaks_Order(v);
 
                 break;
             case 'n':
-                BreakStr_Opt(str, "\n", v);
+                BreakStr_Requ(str, " ", v);
 
                 n = atoi(v[1]);
                 if (n == 0) printf("%d\n", time);
@@ -267,6 +300,20 @@ int main()
             case 'd':
                 break;
             case 'a':
+                BreakStr_Opt(str, "\n", v);
+
+                if (v[1] == NULL)
+                {
+                    for (i = 0; i < act_number; i++)
+                        printf("%s\n", activities[i].des_act);
+                }
+                else
+                {
+                    strcpy(a.des_act, v[1]);
+                    AddActivity(a);
+                    act_number++;
+                }
+
                 break;
             case 'q':
                 exit(EXIT_SUCCESS);

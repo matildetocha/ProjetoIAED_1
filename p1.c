@@ -20,9 +20,8 @@
 /* Número máximo de atividades que o sistema suporta. */
 #define SZ_ACT 10
 /* Número máximo de instruções que o sitema suporta*/
-#define MX 6002
+#define MAX 6002
 
-#define MAX 100
 
 /* Structs */
 typedef struct

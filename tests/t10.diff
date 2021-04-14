@@ -1,20 +1,12 @@
-2,5c2,15
-< 1 TO DO #1 proj
-< 1 TO DO #1 proj
-< 1 TO DO #1 proj
-< 1 TO DO #1 proj
+6c6,7
+< duration=0 slack=-1
 ---
-> 3
-> 5
-> 1 IN PROGRESS #1 proj
-> 8
 > 1 3 proj
 > duration=5 slack=4
-> 1 DONE #1 proj
-> 11
-> 1 DEBUG #1 proj
+9a11
 > 1 3 proj
-> 13
+11c13,14
+< duration=0 slack=-1
+---
 > duration=10 slack=9
 > 1 3 proj
-> 1 DONE #1 proj

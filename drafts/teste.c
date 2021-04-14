@@ -5,22 +5,18 @@
 
 int main()
 {
-    char str[80], v[80] = "joao";
-    const char s[10] = "\n";
+    char str[80] = "m 1 maria IN PROGRESS";
+    const char s[10] = " ";
     char *token;
 
-    strcpy(str, v);
-    puts(str);
-    
-    /* get the first token */
+    /* get the first token */ 
     token = strtok(str, " ");
 
     /* walk through other tokens */
     while (token != NULL)
     {
         printf("%s\n", token);
-        token = strtok(NULL, s);
-    }
-
+        token = strtok(NULL, s); 
+    } 
     return 0;
 }

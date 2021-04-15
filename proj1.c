@@ -21,7 +21,7 @@
 #define SZ_ACT 10
 
 /* Maximum number of instructions that the system supports. */
-#define MAX 6002
+#define MAX 50000
 
 /* Number of required instructions by command 't'. */
 #define INST_T 2
@@ -119,7 +119,7 @@ Task FillTask(char *v[MAX])
     Task t;
 
     t.duration = atoi(v[1]);
-    strncpy(t.des_task, v[2], 51);
+    strncpy(t.des_task, v[2], SZ_DES_T); 
     strncpy(t.task_act.des_act, TO_DO, SZ_DES_UA);
     t.identifier = task_number + 1;
     t.starting_time = 0;
@@ -147,7 +147,7 @@ int AddTaskError(Task t)
             return 1;
         }
     }
-    if (!isdigit(t.duration) && t.duration < 0)
+    if (t.duration <= 0)
     {
         printf(T_ERROR3);
         task_number--;
@@ -218,7 +218,7 @@ void MergeSort(char *t[], int ids[], int l, int r)
 /* List tasks in alphabetical order. */
 void ListsTasks_Alph()
 {
-    int i, j, ids[SZ_TASKS];
+    int i, ids[SZ_TASKS];
     char *l_tasks[SZ_DES_T];
 
     for (i = 0; i < task_number; i++)
@@ -231,7 +231,7 @@ void ListsTasks_Alph()
 
     for (i = 0; i < task_number; i++)
     {
-        j = ids[i] - 1;
+        int j = ids[i] - 1;
         printf(L_OUT, tasks[j].identifier, tasks[j].task_act.des_act, tasks[j].duration, tasks[j].des_task);
     }
 }
@@ -239,24 +239,25 @@ void ListsTasks_Alph()
 /* Lists the tasks in the global vector "tasks" in order of input, given by given the string. */
 void ListsTaks_Order(char *v[MAX])
 {
-    int i = 1;
+    int i = 1; 
+
     while (v[i] != NULL)
     {
         int val = atoi(v[i++]);
         if (val > tasks[task_number - 1].identifier)
-        {
             printf(L_ERROR1, val);
-            return;
+        else
+        {
+            val--;
+            printf(L_OUT, tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].duration, tasks[val].des_task); 
         }
-        val--;
-        printf(L_OUT, tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].duration, tasks[val].des_task);
-    }
+    } 
 }
 
 /* Advances in the system time by the given amount. */
 void AdvanceTime(int n)
 {
-    if (!isdigit(n) && n <= 0)
+    if (!isdigit(n) && n < 0)
         printf(N_ERROR1);
     else time += n;
 }
@@ -291,7 +292,7 @@ int MoveError(char *v[MAX])
 {
     int j, user_exists = 0, act_exists = 0; 
     
-    if (atoi(v[1]) > task_number || atoi(v[1]) < 0)      /* // ? NAO FUNCIONA COM ISDIGIT, PORQUE? */
+    if (atoi(v[1]) > task_number || atoi(v[1]) <= 0)      /* // ? NAO FUNCIONA COM ISDIGIT, PORQUE? */
     {
         printf(M_ERROR1);
         return 1;
@@ -343,9 +344,9 @@ void MoveTask(char *v[MAX])
         tasks[id].starting_time = time;
     else if (strcmp(v[3], DONE) == 0)
     {   
-        if (strcmp(tasks[id].task_act.des_act, TO_DO)) duration = 0;
+        if (strcmp(tasks[id].task_act.des_act, TO_DO) == 0) duration = 0;
         else duration = time - tasks[id].starting_time;
-        slack = duration -  tasks[id].duration;
+        slack = duration - tasks[id].duration;
         printf(M_OUT, duration, slack); 
     }
 }
@@ -429,7 +430,7 @@ int main()
     char str[MAX], *v[MAX]; 
     int i, n; 
     User u;
-    Task t;
+    Task t; 
     Activity a;
 
     strcpy(activities[0].des_act, TO_DO);
@@ -452,14 +453,14 @@ int main()
                 BreakStr_Requ(str, v, INST_T);
                 t = FillTask(v);
                 AddTask(t);
-                task_number++;
+                task_number++; 
 
                 break;
             case 'l':
                 BreakStr_Opt(str, SPACE, v);
 
                 if (v[1] == NULL) ListsTasks_Alph();
-                else ListsTaks_Order(v);
+                else ListsTaks_Order(v); 
 
                 break;
             case 'n':
@@ -475,7 +476,7 @@ int main()
 
                 break;
             case 'u':
-                BreakStr_Opt(str, NEWLINE, v);
+                BreakStr_Opt(str, SPACE_NEWLINE, v);
 
                 if (v[1] == NULL)
                 {

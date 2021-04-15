@@ -1,6 +1,6 @@
-t 12 task
-t 20 abcd
-t 68 lajnjd
-t 23 jiasda
-l
+a DEBUG 1
+a
+t 1 comer
+u alberto
+m 1 alberto DEBUG 1
 q

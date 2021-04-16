@@ -13,7 +13,7 @@
 #define SZ_DES_UA 21
 /* Maximum number of characters used to describe a task. */
 #define SZ_DES_T 51
-/* Maximum number of users that the system supports.. */
+/* Maximum number of users that the system supports. */
 #define SZ_USERS 50
 /* Maximum number of tasks that the system supports. */
 #define SZ_TASKS 10000
@@ -55,7 +55,7 @@
 #define N_OUT "%d\n"
 
 /* 'u' command errors. */
-#define U_ERROR1 "user already exists\n" 
+#define U_ERROR1 "user already exists\n"
 #define U_ERROR2 "too many users\n"
 /* 'u' and 'a' commands outputs. */
 #define A_N_OUT "%s\n"
@@ -88,11 +88,12 @@
 #define less(A, B) (key(A) < key(B))
 #define equal(A, B) (key(A) == key(B))
 
-/* Structs */
+/* Structs and struct arrays*/
 typedef struct
 {
     char des_user[SZ_DES_UA];
 } User;
+/* Array of current system users. */
 User system_users[SZ_USERS];
 
 typedef struct
@@ -100,6 +101,7 @@ typedef struct
     char des_act[SZ_DES_UA];
 
 } Activity;
+/* Array of current system activities. */
 Activity activities[SZ_ACT];
 
 typedef struct
@@ -111,7 +113,9 @@ typedef struct
     Activity task_act;
     int starting_time;
 } Task;
+/* Array of current system tasks. */
 Task tasks[SZ_TASKS];
+/* Auxiliary array used for listing tasks. */
 Task aux_tasks[SZ_TASKS];
 
 /* The number of users stored. */
@@ -122,7 +126,6 @@ int task_number = 0;
 int act_number = 3;
 /* System time. */
 int time = 0;
-
 
 /* Copies the global vector "tasks" to the global vector "aux_tasks", 
 so as not to destroy or alter the first one. */
@@ -141,7 +144,8 @@ void AuxTasks()
     }
 }
 
-/* */
+/* Auxiliary function for merge sorting, used to copy all the information from 
+given task a to given task b. */
 void MergeAux(int i, int j, Task a[SZ_TASKS], Task b[SZ_TASKS])
 {
     strcpy(a[i].des_task, b[j].des_task);
@@ -152,11 +156,11 @@ void MergeAux(int i, int j, Task a[SZ_TASKS], Task b[SZ_TASKS])
     a[i].duration = b[j].duration;
 }
 
-/* */
+/* Merges auxiliary array into aux_tasks, in order to sort tasks descriptions. */
 void MergeStr(int l, int m, int r)
 {
     int i, j, k;
-    Task aux[SZ_TASKS]; 
+    Task aux[SZ_TASKS];
 
     for (i = m + 1; i > l; i--)
         MergeAux(i - 1, i - 1, aux, aux_tasks);
@@ -171,16 +175,18 @@ void MergeStr(int l, int m, int r)
     }
 }
 
-/* */
+/* Sorts tasks descriptions in aux_tasks in alphabetical order. */
 void MergeSortTasks(int l, int r)
 {
     int m = (r + l) / 2;
     if (r <= l) return;
+
     MergeSortTasks(l, m);
     MergeSortTasks(m + 1, r);
     MergeStr(l, m, r);
 }
 
+/* Merges auxiliary array into aux_tasks, in order to sort tasks starting times. */
 void MergeInt(int l, int m, int r)
 {
     int i, j, k;
@@ -198,7 +204,7 @@ void MergeInt(int l, int m, int r)
         {
             if (strcmp(aux[j].des_task, aux[i].des_task) < 0)
                 MergeAux(k, j--, aux_tasks, aux);
-            else 
+            else
                 MergeAux(k, i++, aux_tasks, aux);
         }
         else
@@ -206,6 +212,7 @@ void MergeInt(int l, int m, int r)
     }
 }
 
+/* Sorts tasks starting times in aux_tasks in alphabetical order. */
 void MergeSortAct(int l, int r)
 {
     int m = (r + l) / 2;
@@ -215,13 +222,13 @@ void MergeSortAct(int l, int r)
     MergeInt(l, m, r);
 }
 
- /* Fills task t with the given information from the input and with the starting information as well. */
+/* Fills task t with the given information from the input and with the starting information as well. */
 Task FillTask(char *v[MAX])
 {
     Task t;
 
     t.duration = atoi(v[1]);
-    strncpy(t.des_task, v[2], SZ_DES_T); 
+    strncpy(t.des_task, v[2], SZ_DES_T);
     strncpy(t.task_act.des_act, TO_DO, SZ_DES_UA);
     t.identifier = task_number + 1;
     t.starting_time = 0;
@@ -275,7 +282,7 @@ void AddTask(Task t)
     }
 }
 
-/* List tasks in alphabetical order. */
+/* List tasks in the global vector "tasks" in alphabetical order. */
 void ListsTasks_Alph()
 {
     int i;
@@ -292,19 +299,19 @@ void ListsTasks_Alph()
 /* Lists the tasks in the global vector "tasks" in order of input, given by given the string. */
 void ListsTaks_Order(char *v[MAX])
 {
-    int i = 1; 
+    int i = 1;
 
     while (v[i] != NULL)
     {
-        int val = atoi(v[i++]);
+         int val = atoi(v[i++]);
         if (val > tasks[task_number - 1].identifier || val < 0)
             printf(L_ERROR1, val);
         else
         {
             val--;
-            printf(L_OUT, tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].duration, tasks[val].des_task); 
+            printf(L_OUT, tasks[val].identifier, tasks[val].task_act.des_act, tasks[val].duration, tasks[val].des_task);
         }
-    } 
+    }
 }
 
 /* Advances in the system time by the given amount. */
@@ -314,10 +321,11 @@ void AdvanceTime(int n)
     {
         printf(N_ERROR1);
         return;
-    }    
+    }
     if (n == 0) printf(N_OUT, time);
     else
-    {   time += n;
+    {
+        time += n;
         printf(N_OUT, time);
     }
 }
@@ -347,12 +355,12 @@ void AddUser(User v)
         strcpy(system_users[user_number].des_user, v.des_user);
 }
 
-/* Checks if a task is able to move to another activity or not, according to some errors */
+/* Checks if a task is able to be moved to another activity or not, according to some errors. */
 int MoveError(char *v[MAX])
 {
-    int j, user_exists = 0, act_exists = 0; 
-    
-    if (atoi(v[1]) > task_number || atoi(v[1]) <= 0)      /* // ? NAO FUNCIONA COM ISDIGIT, PORQUE? */
+    int j, user_exists = 0, act_exists = 0;
+
+    if (atoi(v[1]) > task_number || atoi(v[1]) <= 0) 
     {
         printf(M_ERROR1);
         return 1;
@@ -384,18 +392,18 @@ int MoveError(char *v[MAX])
     {
         printf(M_ERROR4);
         return 1;
-    } 
+    }
     return 0;
-} 
+}
 
-/* Moves a task from one activity to another. */ 
+/* Moves a task from one activity to another if moving doesn't raise any errors. */
 void MoveTask(char *v[MAX])
 {
     int id, duration, slack;
 
     if (MoveError(v) == 1) return;
 
-    id = atoi(v[1]) - 1; 
+    id = atoi(v[1]) - 1;
 
     strcpy(tasks[id].task_user.des_user, v[2]);
 
@@ -403,17 +411,18 @@ void MoveTask(char *v[MAX])
     {
         strcpy(tasks[id].task_act.des_act, v[3]);
         tasks[id].starting_time = time;
-    }    
+    }
     strcpy(tasks[id].task_act.des_act, v[3]);
     if (strcmp(v[3], DONE) == 0)
-    {   
+    {
         if (strcmp(tasks[id].task_act.des_act, TO_DO) == 0) duration = 0;
         else duration = time - tasks[id].starting_time;
         slack = duration - tasks[id].duration;
-        printf(M_OUT, duration, slack); 
-    }   
+        printf(M_OUT, duration, slack);
+    }
 }
 
+/* Checks if the tasks from a given activity can be listed or not, according to some errors. */
 int ListsTasksError(char *v[MAX])
 {
     int i, act_exists = 0;
@@ -431,11 +440,13 @@ int ListsTasksError(char *v[MAX])
     return 0;
 }
 
+/* Lists all the tasks in a given activy in ascending order of starting times, 
+if listing these tasks doesn't raise any errors. */
 void ListsTaks_Act(char *v[MAX])
 {
     int i;
 
-    if (ListsTasksError(v) == 1) return; 
+    if (ListsTasksError(v) == 1) return;
 
     AuxTasks();
     MergeSortAct(0, task_number - 1);
@@ -443,11 +454,12 @@ void ListsTaks_Act(char *v[MAX])
     for (i = 0; i < task_number; i++)
     {
         if (strcmp(aux_tasks[i].task_act.des_act, v[1]) == 0)
-            printf(D_OUT, aux_tasks[i].identifier, aux_tasks[i].starting_time, aux_tasks[i].des_task); 
-    } 
+            printf(D_OUT, aux_tasks[i].identifier, aux_tasks[i].starting_time, aux_tasks[i].des_task);
+    }
 }
 
-/* Adds a new given activity to the global vector of activities. */
+/* Adds a new given activity to the global vector of activities, 
+if adding doesn't raise any errors. */
 void AddActivity(Activity a)
 {
     int i;
@@ -464,7 +476,7 @@ void AddActivity(Activity a)
     for (i = 0; i < SZ_DES_UA; i++)
     {
         if (islower(a.des_act[i]))
-        {    
+        {
             printf(A_ERROR2);
             act_number--;
             return;
@@ -524,13 +536,13 @@ void BreakStr_Opt(char str[MAX], const char delim[], char *v[MAX])
     v[i] = NULL;
 }
 
-/* */
+/* Makes the program run as commands are entered. */
 int main()
 {
-    char str[MAX], *v[MAX]; 
-    int i, n; 
+    char str[MAX], *v[MAX];
+    int i, n;
     User u;
-    Task t; 
+    Task t;
     Activity a;
 
     strcpy(activities[0].des_act, TO_DO);
@@ -553,14 +565,14 @@ int main()
                 BreakStr_Requ(str, v, INST_T);
                 t = FillTask(v);
                 AddTask(t);
-                task_number++; 
+                task_number++;
 
                 break;
             case 'l':
                 BreakStr_Opt(str, SPACE, v);
 
                 if (v[1] == NULL) ListsTasks_Alph();
-                else ListsTaks_Order(v); 
+                else ListsTaks_Order(v);
 
                 break;
             case 'n':
@@ -594,7 +606,7 @@ int main()
             case 'd':
                 BreakStr_Requ(str, v, INST_N);
                 ListsTaks_Act(v);
-                
+
                 break;
             case 'a':
                 BreakStr_Opt(str, NEWLINE, v);
@@ -612,6 +624,6 @@ int main()
                 }
 
                 break;
-            }
+        }
     }
 }

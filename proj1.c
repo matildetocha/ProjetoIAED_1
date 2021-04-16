@@ -26,9 +26,14 @@
 /* Number of required instructions by command 't'. */
 #define INST_T 2
 /* Number of required instructions by command 'm'. */
-#define INST_N 1
+#define INST_N_D 1
 /* Number of required instructions by command 'a'. */
 #define INST_M 3
+
+/* Command 'd'. */
+#define D "d"
+/* Command 'l'. */
+#define L "l"
 
 /* Activity TO DO. */
 #define TO_DO "TO DO"
@@ -128,7 +133,7 @@ int act_number = 3;
 int time = 0;
 
 /* Copies the global vector "tasks" to the global vector "aux_tasks", 
-so as not to destroy or alter the first one. */
+so as not to destroy or change the first one. */
 void AuxTasks()
 {
     int i;
@@ -175,17 +180,6 @@ void MergeStr(int l, int m, int r)
     }
 }
 
-/* Sorts tasks descriptions in aux_tasks in alphabetical order. */
-void MergeSortTasks(int l, int r)
-{
-    int m = (r + l) / 2;
-    if (r <= l) return;
-
-    MergeSortTasks(l, m);
-    MergeSortTasks(m + 1, r);
-    MergeStr(l, m, r);
-}
-
 /* Merges auxiliary array into aux_tasks, in order to sort tasks starting times. */
 void MergeInt(int l, int m, int r)
 {
@@ -212,14 +206,15 @@ void MergeInt(int l, int m, int r)
     }
 }
 
-/* Sorts tasks starting times in aux_tasks in alphabetical order. */
-void MergeSortAct(int l, int r)
+/* Sorts tasks descriptions or starting times in aux_tasks, according to the given command. */
+void MergeSort(char func[], int l, int r)
 {
     int m = (r + l) / 2;
     if (r <= l) return;
-    MergeSortAct(l, m);
-    MergeSortAct(m + 1, r);
-    MergeInt(l, m, r);
+    MergeSort(func, l, m);
+    MergeSort(func, m + 1, r);
+    if (strcmp(func, L) == 0) MergeStr(l, m, r);
+    else if (strcmp(func, D) == 0) MergeInt(l, m, r);
 }
 
 /* Fills task t with the given information from the input and with the starting information as well. */
@@ -283,12 +278,12 @@ void AddTask(Task t)
 }
 
 /* List tasks in the global vector "tasks" in alphabetical order. */
-void ListsTasks_Alph()
+void ListsTasks_Alph(char *v[MAX])
 {
     int i;
 
     AuxTasks();
-    MergeSortTasks(0, task_number - 1);
+    MergeSort(v[0], 0, task_number - 1);
 
     for (i = 0; i < task_number; i++)
     {
@@ -440,7 +435,7 @@ int ListsTasksError(char *v[MAX])
     return 0;
 }
 
-/* Lists all the tasks in a given activy in ascending order of starting times, 
+/* Lists all the tasks in a given activity in ascending order of starting times, 
 if listing these tasks doesn't raise any errors. */
 void ListsTaks_Act(char *v[MAX])
 {
@@ -449,7 +444,7 @@ void ListsTaks_Act(char *v[MAX])
     if (ListsTasksError(v) == 1) return;
 
     AuxTasks();
-    MergeSortAct(0, task_number - 1);
+    MergeSort(v[0], 0, task_number - 1);
 
     for (i = 0; i < task_number; i++)
     {
@@ -571,12 +566,12 @@ int main()
             case 'l':
                 BreakStr_Opt(str, SPACE, v);
 
-                if (v[1] == NULL) ListsTasks_Alph();
+                if (v[1] == NULL) ListsTasks_Alph(v);
                 else ListsTaks_Order(v);
 
                 break;
             case 'n':
-                BreakStr_Requ(str, v, INST_N);
+                BreakStr_Requ(str, v, INST_N_D);
 
                 n = atoi(v[1]);
                 AdvanceTime(n);
@@ -604,7 +599,7 @@ int main()
 
                 break;
             case 'd':
-                BreakStr_Requ(str, v, INST_N);
+                BreakStr_Requ(str, v, INST_N_D);
                 ListsTaks_Act(v);
 
                 break;

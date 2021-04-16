@@ -8,14 +8,7 @@
 typedef int Item;
 #define key(A) (A)
 #define less(A, B) (key(A) < key(B))
-#define exch(A, B) \
-    Item t = A;    \
-    A = B;         \
-    B = t;         \
-    }
-#define compexch(A, B) \
-    if (less(B, A))    \
-    exch(A, B)
+#define equal(A, B) (key(A) == key(B))
 
 Item aux[maxN];
 
@@ -57,30 +50,30 @@ void MergeInt(Item a[], int l, int m, int r)
     for (j = m; j < r; j++)
         aux[r + m - j] = a[j + 1];
     for (k = l; k <= r; k++)
-        if (less(aux[j], aux[i]))
+        if (less(aux[j], aux[i]) || equal(aux[j], aux[i]))
             a[k] = aux[j--];
         else
             a[k] = aux[i++];
 }
 
-void MergeSort(char *a[], int ids[], int l, int r)
+void MergeSort(int d[], int l, int r)
 {
     int m = (r + l) / 2;
     if (r <= l)
         return;
-    MergeSort(a, ids, l, m);
-    MergeSort(a, ids, m + 1, r);
-    MergeStr(a, ids, l, m, r);
+    MergeSort(d, l, m);
+    MergeSort(d, m + 1, r);
+    MergeInt(d, l, m, r);
 }
 
 int main()
 {
-    char *b[maxN] = {"nuno", "luís", "alexandre", "ana", "raquel", "beatriz", "matilde"};
-    int ids[maxN] = {1, 2, 3, 4, 5, 6, 7};
+    /* char *b[maxN] = {"nuno", "luís", "alexandre", "ana", "raquel", "beatriz", "matilde"}; */
+    int duration[maxN] = {1, 2, 3, 4, 5, 6, 7, 2, 7};
     int i;
 
-    MergeSort(b, ids, 0, 6);
-    for (i = 0; i < 7; i++)
-        printf("%d %s\n", ids[i], b[i]);
+    MergeSort(duration, 0, 8);
+    for (i = 0; i < 9; i++)
+        printf("%d\n", duration[i]);
     return 0;
 }

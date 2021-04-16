@@ -68,6 +68,11 @@
 /* 'm' command output. */
 #define M_OUT "duration=%d slack=%d\n"
 
+/* 'd' command error. */
+#define D_ERROR "no such activity\n"
+/* 'd' command output. */
+#define D_OUT "%d %d %s\n"
+
 /* 'a' command errors. */
 #define A_ERROR1 "duplicate activity\n"
 #define A_ERROR2 "invalid description\n"
@@ -78,6 +83,10 @@
 #define NEWLINE "\n"
 #define SPACE " "
 #define SPACE_NEWLINE " \n"
+
+#define key(A) (A)
+#define less(A, B) (key(A) < key(B))
+#define equal(A, B) (key(A) == key(B))
 
 /* Structs */
 typedef struct
@@ -103,6 +112,7 @@ typedef struct
     int starting_time;
 } Task;
 Task tasks[SZ_TASKS];
+Task aux_tasks[SZ_TASKS];
 
 /* The number of users stored. */
 int user_number = 0;
@@ -112,6 +122,98 @@ int task_number = 0;
 int act_number = 3;
 /* System time. */
 int time = 0;
+
+
+/* Copies the global vector "tasks" to the global vector "aux_tasks", 
+so as not to destroy or alter the first one. */
+void AuxTasks()
+{
+    int i;
+
+    for (i = 0; i < task_number; i++)
+    {
+        strcpy(aux_tasks[i].des_task, tasks[i].des_task);
+        strcpy(aux_tasks[i].task_act.des_act, tasks[i].task_act.des_act);
+        strcpy(aux_tasks[i].task_user.des_user, tasks[i].task_user.des_user);
+        aux_tasks[i].identifier = tasks[i].identifier;
+        aux_tasks[i].starting_time = tasks[i].starting_time;
+        aux_tasks[i].duration = tasks[i].duration;
+    }
+}
+
+/* */
+void MergeAux(int i, int j, Task a[SZ_TASKS], Task b[SZ_TASKS])
+{
+    strcpy(a[i].des_task, b[j].des_task);
+    strcpy(a[i].task_act.des_act, b[j].task_act.des_act);
+    strcpy(a[i].task_user.des_user, b[j].task_user.des_user);
+    a[i].identifier = b[j].identifier;
+    a[i].starting_time = b[j].starting_time;
+    a[i].duration = b[j].duration;
+}
+
+/* */
+void MergeStr(int l, int m, int r)
+{
+    int i, j, k;
+    Task aux[SZ_TASKS]; 
+
+    for (i = m + 1; i > l; i--)
+        MergeAux(i - 1, i - 1, aux, aux_tasks);
+    for (j = m; j < r; j++)
+        MergeAux(r + m - j, j + 1, aux, aux_tasks);
+    for (k = l; k <= r; k++)
+    {
+        if (strcmp(aux[j].des_task, aux[i].des_task) < 0)
+            MergeAux(k, j--, aux_tasks, aux);
+        else
+            MergeAux(k, i++, aux_tasks, aux);
+    }
+}
+
+/* */
+void MergeSortTasks(int l, int r)
+{
+    int m = (r + l) / 2;
+    if (r <= l) return;
+    MergeSortTasks(l, m);
+    MergeSortTasks(m + 1, r);
+    MergeStr(l, m, r);
+}
+
+void MergeInt(int l, int m, int r)
+{
+    int i, j, k;
+    Task aux[SZ_TASKS];
+
+    for (i = m + 1; i > l; i--)
+        MergeAux(i - 1, i - 1, aux, aux_tasks);
+    for (j = m; j < r; j++)
+        MergeAux(r + m - j, j + 1, aux, aux_tasks);
+    for (k = l; k <= r; k++)
+    {
+        if (less(aux[j].starting_time, aux[i].starting_time))
+            MergeAux(k, j--, aux_tasks, aux);
+        else if (equal(aux[j].starting_time, aux[i].starting_time))
+        {
+            if (strcmp(aux[j].des_task, aux[i].des_task) < 0)
+                MergeAux(k, j--, aux_tasks, aux);
+            else 
+                MergeAux(k, i++, aux_tasks, aux);
+        }
+        else
+            MergeAux(k, i++, aux_tasks, aux);
+    }
+}
+
+void MergeSortAct(int l, int r)
+{
+    int m = (r + l) / 2;
+    if (r <= l) return;
+    MergeSortAct(l, m);
+    MergeSortAct(m + 1, r);
+    MergeInt(l, m, r);
+}
 
  /* Fills task t with the given information from the input and with the starting information as well. */
 Task FillTask(char *v[MAX])
@@ -173,66 +275,17 @@ void AddTask(Task t)
     }
 }
 
-/* */
-void MergeStr(char *t[], int ids[], int l, int m, int r)
-{
-    int i, j, k, ax_ids[SZ_TASKS];
-    char *ax[SZ_DES_T]; 
-
-    for (i = m + 1; i > l; i--)
-    {
-        ax[i - 1] = t[i - 1];
-        ax_ids[i - 1] = ids[i - 1];
-    }
-    for (j = m; j < r; j++)
-    {
-        ax[r + m - j] = t[j + 1];
-        ax_ids[r + m - j] = ids[j + 1];
-    }
-    for (k = l; k <= r; k++)
-    {
-        if (strcmp(ax[j], ax[i]) < 0)
-        {
-            t[k] = ax[j];
-            ids[k] = ax_ids[j--];
-        }
-        else
-        {
-            t[k] = ax[i];
-            ids[k] = ax_ids[i++];
-        } 
-    }
-}
-
-/* */
-void MergeSort(char *t[], int ids[], int l, int r)
-{
-    int m = (r + l) / 2;
-    if (r <= l)
-        return;
-    MergeSort(t, ids, l, m);
-    MergeSort(t, ids, m + 1, r);
-    MergeStr(t, ids, l, m, r);
-}
-
 /* List tasks in alphabetical order. */
 void ListsTasks_Alph()
 {
-    int i, ids[SZ_TASKS];
-    char *l_tasks[SZ_DES_T];
+    int i;
+
+    AuxTasks();
+    MergeSortTasks(0, task_number - 1);
 
     for (i = 0; i < task_number; i++)
     {
-        l_tasks[i] = tasks[i].des_task;  /* // ? PORQUE É QUE NÃO DÁ COM O STRCPY ??? */
-        ids[i] = tasks[i].identifier;
-    }
-
-    MergeSort(l_tasks, ids, 0, task_number - 1);
-
-    for (i = 0; i < task_number; i++)
-    {
-        int j = ids[i] - 1;
-        printf(L_OUT, tasks[j].identifier, tasks[j].task_act.des_act, tasks[j].duration, tasks[j].des_task);
+        printf(L_OUT, aux_tasks[i].identifier, aux_tasks[i].task_act.des_act, aux_tasks[i].duration, aux_tasks[i].des_task);
     }
 }
 
@@ -338,17 +391,53 @@ void MoveTask(char *v[MAX])
     id = atoi(v[1]) - 1; 
 
     strcpy(tasks[id].task_user.des_user, v[2]);
-    strcpy(tasks[id].task_act.des_act, v[3]);
-    
-    if (!strcmp(v[3], TO_DO) && strcmp(tasks[id].task_act.des_act, TO_DO) == 0)
+
+    if (strcmp(v[3], TO_DO) != 0 && strcmp(tasks[id].task_act.des_act, TO_DO) == 0)
+    {
+        strcpy(tasks[id].task_act.des_act, v[3]);
         tasks[id].starting_time = time;
-    else if (strcmp(v[3], DONE) == 0)
+    }    
+    strcpy(tasks[id].task_act.des_act, v[3]);
+    if (strcmp(v[3], DONE) == 0)
     {   
         if (strcmp(tasks[id].task_act.des_act, TO_DO) == 0) duration = 0;
         else duration = time - tasks[id].starting_time;
         slack = duration - tasks[id].duration;
         printf(M_OUT, duration, slack); 
+    }   
+}
+
+int ListsTasksError(char *v[MAX])
+{
+    int i, act_exists = 0;
+
+    for (i = 0; i < act_number; i++)
+    {
+        if (strcmp(activities[i].des_act, v[1]) == 0)
+            act_exists = 1;
     }
+    if (act_exists == 0)
+    {
+        printf(D_ERROR);
+        return 1;
+    }
+    return 0;
+}
+
+void ListsTaks_Act(char *v[MAX])
+{
+    int i;
+
+    if (ListsTasksError(v) == 1) return; 
+
+    AuxTasks();
+    MergeSortAct(0, task_number - 1);
+
+    for (i = 0; i < task_number; i++)
+    {
+        if (strcmp(aux_tasks[i].task_act.des_act, v[1]) == 0)
+            printf(D_OUT, aux_tasks[i].identifier, aux_tasks[i].starting_time, aux_tasks[i].des_task); 
+    } 
 }
 
 /* Adds a new given activity to the global vector of activities. */
@@ -425,6 +514,7 @@ void BreakStr_Opt(char str[MAX], const char delim[], char *v[MAX])
     v[i] = NULL;
 }
 
+/* */
 int main()
 {
     char str[MAX], *v[MAX]; 
@@ -497,6 +587,9 @@ int main()
 
                 break;
             case 'd':
+                BreakStr_Requ(str, v, INST_N);
+                ListsTaks_Act(v);
+                
                 break;
             case 'a':
                 BreakStr_Opt(str, NEWLINE, v);

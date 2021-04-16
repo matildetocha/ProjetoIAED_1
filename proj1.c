@@ -297,7 +297,7 @@ void ListsTaks_Order(char *v[MAX])
     while (v[i] != NULL)
     {
         int val = atoi(v[i++]);
-        if (val > tasks[task_number - 1].identifier)
+        if (val > tasks[task_number - 1].identifier || val < 0)
             printf(L_ERROR1, val);
         else
         {
@@ -311,8 +311,15 @@ void ListsTaks_Order(char *v[MAX])
 void AdvanceTime(int n)
 {
     if (!isdigit(n) && n < 0)
+    {
         printf(N_ERROR1);
-    else time += n;
+        return;
+    }    
+    if (n == 0) printf(N_OUT, time);
+    else
+    {   time += n;
+        printf(N_OUT, time);
+    }
 }
 
 /* Adds a new given user to the global vector of system users, 
@@ -453,7 +460,10 @@ void AddActivity(Activity a)
             act_number--;
             return;
         }
-        else if (islower(a.des_act[i]))
+    }
+    for (i = 0; i < SZ_DES_UA; i++)
+    {
+        if (islower(a.des_act[i]))
         {    
             printf(A_ERROR2);
             act_number--;
@@ -557,12 +567,7 @@ int main()
                 BreakStr_Requ(str, v, INST_N);
 
                 n = atoi(v[1]);
-                if (n == 0) printf(N_OUT, time);
-                else
-                {
-                    AdvanceTime(n);
-                    printf(N_OUT, time);
-                }
+                AdvanceTime(n);
 
                 break;
             case 'u':

@@ -298,7 +298,7 @@ void ListsTaks_Order(char *v[MAX])
 
     while (v[i] != NULL)
     {
-         int val = atoi(v[i++]);
+        int val = atoi(v[i++]);
         if (val > tasks[task_number - 1].identifier || val < 0)
             printf(L_ERROR1, val);
         else
@@ -407,7 +407,9 @@ void MoveTask(char *v[MAX])
         strcpy(tasks[id].task_act.des_act, v[3]);
         tasks[id].starting_time = time;
     }
+
     strcpy(tasks[id].task_act.des_act, v[3]);
+    
     if (strcmp(v[3], DONE) == 0)
     {
         if (strcmp(tasks[id].task_act.des_act, TO_DO) == 0) duration = 0;
